@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Simple function to get the strength of an operator
+int priority(char ch) {
+    if (ch == '^') return 3;          // Strongest
+    if (ch == '*' || ch == '/') return 2;
+    if (ch == '+' || ch == '-') return 1; // Weakest
+    return 4;                         // Plain letters/numbers
+}
+
+int main() {
+    char postfix[100];
+    char stack[100][100];  // Stores the text formulas
+    int p_stack[100];      // Stores the priority level of those formulas
+    int top = -1;
+
+    printf("Enter postfix expression (e.g., ab+c*): ");
+    scanf("%s", postfix);
+
+    for (int i = 0; postfix[i] != '\0'; i++) {
+        char ch = postfix[i];
+        int curr_p = priority(ch);
+
+        // 1. If it's a letter/number, push it
+        if (isalnum(ch)) {
+            top++;
+            stack[top][0] = ch;
+            stack[top][1] = '\0'; // Turn char into string
+            p_stack[top] = curr_p; // Store priority (4)
+        } 
+        // 2. If it's an operator
+        else {
+            char op1[100], op2[100], temp[100];
+            
+            // Pop the right operand and get its priority
+            strcpy(op2, stack[top]);
+            int p2 = p_stack[top--];
+            
+            // Pop the left operand and get its priority
+            strcpy(op1, stack[top]);
+            int p1 = p_stack[top--];
+
+            // Add brackets to Left side if it was created by a weaker operator
+            if (p1 < curr_p) {
+                sprintf(temp, "(%s)", op1);
+                strcpy(op1, temp);
+            }
+
+            // Add brackets to Right side if it was created by a weaker operator
+            if (p2 < curr_p) {
+                sprintf(temp, "(%s)", op2);
+                strcpy(op2, temp);
+            }
+
+            // Combine them neatly without redundant outer brackets
+            top++;
+            sprintf(stack[top], "%s%c%s", op1, ch, op2);
+            p_stack[top] = curr_p; // Save the operator's priority level
+        }
+    }
+
+    // Print the clean, smart math expression
+    printf("Clean Infix: %s\n", stack[top]);
+
+    return 0;
+}
