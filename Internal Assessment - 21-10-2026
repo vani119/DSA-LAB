@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure for a node
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Global pointers for front and rear of the queue
+struct Node* front = NULL;
+struct Node* rear = NULL;
+
+// Function to add an element to the circular queue
+void enqueue(int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    if (newNode == NULL) {
+        printf("Queue Overflow: Memory allocation failed.\n");
+        return;
+    }
+    newNode->data = value;
+    
+    // If the queue is empty
+    if (front == NULL) {
+        front = newNode;
+        rear = newNode;
+        rear->next = front; // Link back to itself to form the circle
+    } else {
+        rear->next = newNode; // Connect the old rear to the new node
+        rear = newNode;       // Update the rear pointer to the new node
+        rear->next = front;   // Maintain the circular link back to front
+    }
+    printf("Inserted -> %d\n", value);
+}
+
+// Function to remove an element from the circular queue
+int dequeue() {
+    if (front == NULL) {
+        printf("Queue Underflow: The queue is empty.\n");
+        return -1;
+    }
+    
+    int data;
+    struct Node* temp = front;
+    
+    // Case 1: If there is only one node in the queue
+    if (front == rear) {
+        data = front->data;
+        front = NULL;
+        rear = NULL;
+        free(temp);
+    } 
+    // Case 2: If there are multiple nodes
+    else {
+        data = front->data;
+        front = front->next; // Move front to the next node
+        rear->next = front;  // Update rear to point to the new front
+        free(temp);
+    }
+    return data;
+}
+
+// Function to view the front element without removing it
+int peek() {
+    if (front == NULL) {
+        printf("Queue is empty.\n");
+        return -1;
+    }
+    return front->data;
+}
+
+// Function to print all elements in the circular queue
+void display() {
+    if (front == NULL) {
+        printf("Queue is empty.\n");
+        return;
+    }
+    
+    struct Node* temp = front;
+    printf("Queue Elements: ");
+    do {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    } while (temp != front); // Loop until we wrap back around to the front node
+    printf("\n");
+}
+int main() {
+    int choice, val;
+    while (printf("\n1.Enq 2.Deq 3.Disp 4.Exit: ") && scanf("%d", &choice) && choice != 4) {
+        if (choice == 1) { printf("Val: "); scanf("%d", &val); enqueue(val); }
+        else if (choice == 2) printf("Dequeued: %d\n", dequeue());
+        else if (choice == 3) display();
+    }
+    return 0;
+}
